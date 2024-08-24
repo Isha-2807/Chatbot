@@ -5,76 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Chatbot</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        #chat-container {
-            width: 300px;
-            margin: 50px auto;
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        #messages {
-            height: 200px;
-            overflow-y: scroll;
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        #user-input {
-            width: calc(100% - 22px);
-            padding: 10px;
-        }
-        #send-btn {
-            padding: 10px;
-            width: 100%;
-            margin-top: 5px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        #chatbox { width: 100%; height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; }
+        #userInput { width: calc(100% - 60px); padding: 10px; }
+        #sendBtn { padding: 10px; }
     </style>
 </head>
 <body>
-    <div id="chat-container">
-        <div id="messages"></div>
-        <input type="text" id="user-input" placeholder="Type your message here">
-        <button id="send-btn">Send</button>
-    </div>
 
-    <script>
-        document.getElementById('send-btn').addEventListener('click', function() {
-            let userInput = document.getElementById('user-input').value;
-            if (userInput.trim() === '') {
-                return;
-            }
+<div id="chatbox"></div>
+<input type="text" id="userInput" placeholder="Type your message here...">
+<button id="sendBtn">Send</button>
 
-            // Display user message
-            let userMessageElement = document.createElement('div');
-            userMessageElement.textContent = 'You: ' + userInput;
-            document.getElementById('messages').appendChild(userMessageElement);
+<script>
+    const chatbox = document.getElementById('chatbox');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
 
-            // Send user message to backend
-            fetch('/chatbot', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: userInput })
-            })
-            .then(response => response.json())
-            .then(data => {
-                let botMessageElement = document.createElement('div');
-                botMessageElement.textContent = 'Bot: ' + data.response;
-                document.getElementById('messages').appendChild(botMessageElement);
+    function appendMessage(message, className) {
+        const messageElem = document.createElement('div');
+        messageElem.className = className;
+        messageElem.textContent = message;
+        chatbox.appendChild(messageElem);
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
 
-                // Clear input field
-                document.getElementById('user-input').value = '';
-            })
-            .catch(error => console.error('Error:', error));
+    sendBtn.addEventListener('click', async () => {
+        const userMessage = userInput.value;
+        if (userMessage.trim() === '') return;
+        appendMessage(`You: ${userMessage}`, 'user-message');
+        userInput.value = '';
+
+        const response = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userMessage })
         });
-    </script>
+        const data = await response.json();
+        appendMessage(`Bot: ${data.response}`, 'bot-message');
+    });
+
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') sendBtn.click();
+    });
+</script>
+
 </body>
 </html>

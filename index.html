@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #chat-container {
+            width: 300px;
+            margin: 50px auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #messages {
+            height: 200px;
+            overflow-y: scroll;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #user-input {
+            width: calc(100% - 22px);
+            padding: 10px;
+        }
+        #send-btn {
+            padding: 10px;
+            width: 100%;
+            margin-top: 5px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <input type="text" id="user-input" placeholder="Type your message here">
+        <button id="send-btn">Send</button>
+    </div>
+
+    <script>
+        document.getElementById('send-btn').addEventListener('click', function() {
+            let userInput = document.getElementById('user-input').value;
+            if (userInput.trim() === '') {
+                return;
+            }
+
+            // Display user message
+            let userMessageElement = document.createElement('div');
+            userMessageElement.textContent = 'You: ' + userInput;
+            document.getElementById('messages').appendChild(userMessageElement);
+
+            // Send user message to backend
+            fetch('/chatbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let botMessageElement = document.createElement('div');
+                botMessageElement.textContent = 'Bot: ' + data.response;
+                document.getElementById('messages').appendChild(botMessageElement);
+
+                // Clear input field
+                document.getElementById('user-input').value = '';
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
